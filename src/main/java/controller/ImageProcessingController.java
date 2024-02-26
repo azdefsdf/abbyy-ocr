@@ -1,7 +1,6 @@
-package com.abbyysdk.controller;
+package controller;
 
 import exception.ImageProcessingException;
-import jakarta.servlet.ServletOutputStream;
 import service.ImageProcessingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
