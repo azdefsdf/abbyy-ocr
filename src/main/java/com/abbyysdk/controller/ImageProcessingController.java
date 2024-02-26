@@ -1,4 +1,4 @@
-package controller;
+package com.abbyysdk.controller;
 
 import exception.ImageProcessingException;
 import service.ImageProcessingService;
@@ -14,10 +14,11 @@ public class ImageProcessingController {
 
     private final ImageProcessingService imageProcessingService;
 
+    
     public ImageProcessingController() {
-    	super();
+		super();
+
     	this.imageProcessingService = new ImageProcessingService();
-		
     }
     
     public ImageProcessingController(ImageProcessingService imageProcessingService) {
@@ -29,8 +30,6 @@ public class ImageProcessingController {
                                                 @RequestParam("projectPath") String projectPath) {
         try {
             imageProcessingService.processImages(images, projectPath);
-            
-       
             
             return ResponseEntity.ok("Images processed successfully.");
         } catch (ImageProcessingException ex) {

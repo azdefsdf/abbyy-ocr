@@ -16,13 +16,6 @@ import com.abbyy.FCEngine.MessagesLanguageEnum;
 import com.abbyy.FCEngine.RecognitionModeEnum;
 import config.SamplesConfig;
 import exception.ImageProcessingException;
-import jakarta.servlet.ServletOutputStream;
-
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.io.IOException;
-
 
 @Service
 public class ImageProcessingService {
@@ -31,8 +24,6 @@ public class ImageProcessingService {
      
     public void processImages(MultipartFile[] images, String projectPath) throws ImageProcessingException {
         IEngine engine = null;
-        startLogging("C:\\ProgramData\\ABBYY\\FCSDK\\12\\FlexiCapture SDK\\Samples\\SampleProjects\\Hello\\SampleProject\\log.txt");
-
         try {
             // Getting engine loader
             trace("Getting engine loader...");
@@ -123,34 +114,7 @@ public class ImageProcessingService {
             }
         }
     }
-    
-    
-    
-    public void processImages(MultipartFile[] images, String projectPath, ServletOutputStream outputStream) throws Exception {
-  
-    }
-    
-    
-    private void startLogging(String logFilePath) {
-        try {
-            // Create a Logger
-            Logger logger = Logger.getLogger("ABBYY FlexiCapture Engine");
-            
-            // Create a FileHandler to write logs to the specified file
-            FileHandler fileHandler = new FileHandler(logFilePath);
-            
-            // Set formatter for the FileHandler
-            fileHandler.setFormatter(new SimpleFormatter());
-            
-            // Add FileHandler to the Logger
-            logger.addHandler(fileHandler);
-            
-            // Start logging
-            logger.info("Logging started");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     private static void trace(String txt) {
         System.out.println(txt);
