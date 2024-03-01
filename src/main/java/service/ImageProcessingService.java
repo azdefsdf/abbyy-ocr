@@ -3,6 +3,7 @@ package service;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ import exception.ImageProcessingException;
 @Service
 public class ImageProcessingService {
 
+
+    
 	public String processImagesAndGetJsonData(MultipartFile[] images, String projectPath)
 			throws ImageProcessingException {
 		IEngine engine = null;
@@ -95,7 +98,7 @@ public class ImageProcessingService {
 
 				// Create a temporary file to store the exported JSON data
 				File tempFile = File.createTempFile("export", ".json");
-				String tempFilePath = tempFile.getAbsolutePath();
+				//String tempFilePath = tempFile.getAbsolutePath();
 
 				IExportParams exportParamsJSON = engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
 				IFileExportParams fileExportParamsJSON = exportParamsJSON.getFileExportParams();
@@ -126,7 +129,7 @@ public class ImageProcessingService {
 				// project.Export(null, exportParamsJSON);
 
 				// Read the exported JSON data from the specified file
-				jsonData = readFileAsString(combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\Batch.json"));
+				jsonData = readFileAsStringAndDelete(combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\Batch.json"));
 
 				tempFile.delete(); // Clean up temp file after reading its content
 
@@ -172,16 +175,25 @@ public class ImageProcessingService {
 		return file;
 	}
 
-	private static String readFileAsString(String filePath) throws Exception {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		byte[] buffer = new byte[4096];
-		int bytesRead;
-		try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
-			while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-				outputStream.write(buffer, 0, bytesRead);
-			}
-		}
-		return new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+	private static String readFileAsStringAndDelete(String filePath) throws Exception {
+	    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+	    byte[] buffer = new byte[4096];
+	    int bytesRead;
+	    try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
+	        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+	            outputStream.write(buffer, 0, bytesRead);
+	        }
+	    }
+	    String fileContent = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+	    
+	    // Delete the file after reading
+	    File file = new File(filePath);
+	    if (file.exists()) {
+	        file.delete();
+	    }
+	    
+	    return fileContent;
 	}
+
 
 }

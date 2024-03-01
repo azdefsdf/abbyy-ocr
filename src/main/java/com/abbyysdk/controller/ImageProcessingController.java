@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +25,7 @@ import service.ImageProcessingService;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Resource
 //@RestController
-
+@CrossOrigin("http://localhost:4200")
 @RestController
 public class ImageProcessingController {
 
@@ -42,10 +43,12 @@ public class ImageProcessingController {
 
 	/////
 
-	@GetMapping("/data")
+	//@GetMapping("/data")
+	@PostMapping("/data")
 	public ResponseEntity<String> fetchAbbyyData(@RequestParam("images") MultipartFile[] images,
 			@RequestParam("projectPath") String projectPath) {
 		try {
+
 			String jsonData = imageProcessingService.processImagesAndGetJsonData(images, projectPath);
 			return ResponseEntity.ok(jsonData);
 		} catch (ImageProcessingException ex) {
