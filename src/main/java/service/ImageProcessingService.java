@@ -27,8 +27,12 @@ import exception.ImageProcessingException;
 @Service
 public class ImageProcessingService {
 
-
-    
+	/**
+	 * @param images
+	 * @param projectPath
+	 * @return
+	 * @throws ImageProcessingException
+	 */
 	public String processImagesAndGetJsonData(MultipartFile[] images, String projectPath)
 			throws ImageProcessingException {
 		IEngine engine = null;
@@ -85,20 +89,22 @@ public class ImageProcessingService {
 
 				///////
 				// Exporting to XLS format
-				trace("Exporting...");
-				IExportParams exportParamsXLS = engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
-				IFileExportParams fileExportParamsXLS = exportParamsXLS.getFileExportParams();
-				fileExportParamsXLS
-						.setRootPath(combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export"));
-				fileExportParamsXLS.setFileFormat(FileExportFormatEnum.FEF_XLS);
-				project.Export(null, exportParamsXLS);
-
+				/*
+				 * trace("Exporting..."); IExportParams exportParamsXLS =
+				 * engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
+				 * IFileExportParams fileExportParamsXLS =
+				 * exportParamsXLS.getFileExportParams(); fileExportParamsXLS
+				 * .setRootPath(combinePaths(samplesFolder,
+				 * "SampleProjects\\Hello\\SampleProject\\Export"));
+				 * fileExportParamsXLS.setFileFormat(FileExportFormatEnum.FEF_XLS);
+				 * project.Export(null, exportParamsXLS);
+				 */
 				trace("Exporting... format Json");
 				// Exporting to JSON format
 
 				// Create a temporary file to store the exported JSON data
-				File tempFile = File.createTempFile("export", ".json");
-				//String tempFilePath = tempFile.getAbsolutePath();
+				// File tempFile = File.createTempFile("export", ".json");
+				// String tempFilePath = tempFile.getAbsolutePath();
 
 				IExportParams exportParamsJSON = engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
 				IFileExportParams fileExportParamsJSON = exportParamsJSON.getFileExportParams();
@@ -129,9 +135,10 @@ public class ImageProcessingService {
 				// project.Export(null, exportParamsJSON);
 
 				// Read the exported JSON data from the specified file
-				jsonData = readFileAsStringAndDelete(combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\Batch.json"));
+				jsonData = readFileAsStringAndDelete(
+						combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\Batch.json"));
 
-				tempFile.delete(); // Clean up temp file after reading its content
+				// tempFile.delete(); // Clean up temp file after reading its content
 
 				/////////
 				trace("Export done successfully.");
@@ -176,24 +183,23 @@ public class ImageProcessingService {
 	}
 
 	private static String readFileAsStringAndDelete(String filePath) throws Exception {
-	    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	    byte[] buffer = new byte[4096];
-	    int bytesRead;
-	    try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
-	        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-	            outputStream.write(buffer, 0, bytesRead);
-	        }
-	    }
-	    String fileContent = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
-	    
-	    // Delete the file after reading
-	    File file = new File(filePath);
-	    if (file.exists()) {
-	        file.delete();
-	    }
-	    
-	    return fileContent;
-	}
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		byte[] buffer = new byte[4096];
+		int bytesRead;
+		try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
+			while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+				outputStream.write(buffer, 0, bytesRead);
+			}
+		}
+		String fileContent = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 
+		// Delete the file after reading
+		File file = new File(filePath);
+		if (file.exists()) {
+			file.delete();
+		}
+
+		return fileContent;
+	}
 
 }
