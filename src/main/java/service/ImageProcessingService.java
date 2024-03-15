@@ -3,12 +3,10 @@ package service;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.abbyy.FCEngine.Engine;
 import com.abbyy.FCEngine.ExportDestinationTypeEnum;
 import com.abbyy.FCEngine.FileExportFormatEnum;
@@ -20,23 +18,22 @@ import com.abbyy.FCEngine.IFileExportParams;
 import com.abbyy.FCEngine.IProject;
 import com.abbyy.FCEngine.MessagesLanguageEnum;
 import com.abbyy.FCEngine.RecognitionModeEnum;
-
 import config.SamplesConfig;
 import exception.ImageProcessingException;
+import com.aspose.words.*;
+
+
+
 
 @Service
 public class ImageProcessingService {
 
-	/**
-	 * @param images
-	 * @param projectPath
-	 * @return
-	 * @throws ImageProcessingException
-	 */
 	public String processImagesAndGetJsonData(MultipartFile[] images, String projectPath)
 			throws ImageProcessingException {
 		IEngine engine = null;
 		String jsonData = null;
+		String jsonData1 = null;
+
 
 		try {
 
@@ -73,6 +70,8 @@ public class ImageProcessingService {
 			trace("Opening the batch...");
 			batch.Open();
 
+					
+			
 			try {
 				// Adding images to the batch
 				trace("Adding images...");
@@ -80,67 +79,67 @@ public class ImageProcessingService {
 					File imageFile = convertMultipartFileToFile(image);
 					System.out.println(imageFile.getPath());
 
+					 String namefile = imageFile.getName() ;
+					 System.out.println(namefile);
+					
 					batch.AddImage(imageFile.getPath());
-				}
+
+					// Path to the input image file
+			        File image_File = new File(imageFile.getPath());
+
+			        // Extract file name and parent folder
+			        String fileName = image_File.getName();
+			        String parentFolderPath = image_File.getParent();
+
+			        // Create a new folder for PDF conversion
+			        String pdfConvertFolderPath = parentFolderPath + File.separator + "PdfConvert";
+			        File pdfConvertFolder = new File(pdfConvertFolderPath);
+			        if (!pdfConvertFolder.exists()) {
+			            pdfConvertFolder.mkdirs(); // Create the folder if it doesn't exist
+			        }
+
+			        // Create a new PDF document
+			        Document doc = new Document();
+			        DocumentBuilder builder = new DocumentBuilder(doc);
+
+			        // Insert the image into the document
+			        builder.insertImage(image_File.getPath());
+
+			        try {
+			            // Save the output PDF file inside the "PdfConvert" folder
+			            String outputFileName = fileName.replaceFirst("[.][^.]+$", "") + ".pdf";
+			            String outputPath = pdfConvertFolderPath + File.separator + outputFileName;
+			            doc.save(outputPath);
+
+			            System.out.println("PDF created successfully at: " + outputPath);
+			        } catch (Exception e) {
+			            e.printStackTrace();
+			        }
+			    }
+
+			    
+					
+				  
+
+				
 
 				// Recognizing the images
 				trace("Recognizing the images...");
 				batch.Recognize(null, RecognitionModeEnum.RM_ReApplyDocumentDefinitions, null);
 
-				///////
-				// Exporting to XLS format
-				/*
-				 * trace("Exporting..."); IExportParams exportParamsXLS =
-				 * engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
-				 * IFileExportParams fileExportParamsXLS =
-				 * exportParamsXLS.getFileExportParams(); fileExportParamsXLS
-				 * .setRootPath(combinePaths(samplesFolder,
-				 * "SampleProjects\\Hello\\SampleProject\\Export"));
-				 * fileExportParamsXLS.setFileFormat(FileExportFormatEnum.FEF_XLS);
-				 * project.Export(null, exportParamsXLS);
-				 */
+			
 				trace("Exporting... format Json");
-				// Exporting to JSON format
-
-				// Create a temporary file to store the exported JSON data
-				// File tempFile = File.createTempFile("export", ".json");
-				// String tempFilePath = tempFile.getAbsolutePath();
-
 				IExportParams exportParamsJSON = engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
 				IFileExportParams fileExportParamsJSON = exportParamsJSON.getFileExportParams();
-
 				fileExportParamsJSON
 						.setRootPath(combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export"));
 				fileExportParamsJSON.setFileFormat(FileExportFormatEnum.FEF_JSON); // Adjust as needed
 				project.Export(null, exportParamsJSON);
+				
+				 
+				jsonData1 = renameFile();			
+				jsonData = readFileAsStringAndDelete(jsonData1);
 
-				//////
-
-				// Create export parameters for JSON export
-				// IExportParams exportParamsJSON =
-				// engine.CreateExportParams(ExportDestinationTypeEnum.EDT_File);
-				// IFileExportParams fileExportParamsJSON =
-				// exportParamsJSON.getFileExportParams();
-
-				// Set the root path for exporting the file
-				// fileExportParamsJSON.setRootPath(combinePaths(samplesFolder,
-				// "SampleProjects\\Hello\\SampleProject\\Export"));
-
-				// Set the file name for the exported JSON data
-				// fileExportParamsJSON.setFileName("export","json");
-				// Set the file format to JSON
-				// fileExportParamsJSON.setFileFormat(FileExportFormatEnum.FEF_JSON);
-
-				// Export the data to the specified file
-				// project.Export(null, exportParamsJSON);
-
-				// Read the exported JSON data from the specified file
-				jsonData = readFileAsStringAndDelete(
-						combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\Batch.json"));
-
-				// tempFile.delete(); // Clean up temp file after reading its content
-
-				/////////
 				trace("Export done successfully.");
 			} catch (Exception ex) {
 				trace("Export error :." + ex.getMessage());
@@ -173,7 +172,7 @@ public class ImageProcessingService {
 		return var3.getPath();
 	}
 
-	private static File convertMultipartFileToFile(MultipartFile multipartFile) throws Exception {
+	public static File convertMultipartFileToFile(MultipartFile multipartFile) throws Exception {
 		String originalFilename = multipartFile.getOriginalFilename();
 		String filePath = "C:\\ProgramData\\ABBYY\\FCSDK\\12\\FlexiCapture SDK\\Samples\\SampleProjects\\Hello\\SampleProject\\saved\\"
 				+ originalFilename;
@@ -182,7 +181,36 @@ public class ImageProcessingService {
 		return file;
 	}
 
+	
+	private static String renameFile() throws Exception {
+		
+	    String samplesFolder = SamplesConfig.GetSamplesFolder();
+		 String customFileName = UUID.randomUUID().toString() + ".json";
+
+	    // Construct the path to the exported JSON file
+	    String exportedFilePath = combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\Batch.json");
+
+	    // Construct the path to the file with the custom name
+	    String customFilePath = combinePaths(samplesFolder, "SampleProjects\\Hello\\SampleProject\\Export\\" + customFileName);
+
+	    // Rename the exported JSON file to the custom name
+	    File exportedFile = new File(exportedFilePath);
+	    File customFile = new File(customFilePath);
+	    boolean renamed = exportedFile.renameTo(customFile);
+	    if (renamed) {
+	        System.out.println("Renamed the file from 'Batch.json' to '" + customFileName + "'");
+	        return customFilePath; // Return the new file path with the custom name
+	    } else {
+	        System.out.println("Failed to rename the file");
+	        return null; // Return null if renaming failed
+	    }
+	}
+
+
+	
 	private static String readFileAsStringAndDelete(String filePath) throws Exception {
+
+		
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		byte[] buffer = new byte[4096];
 		int bytesRead;
@@ -194,12 +222,11 @@ public class ImageProcessingService {
 		String fileContent = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 
 		// Delete the file after reading
-		File file = new File(filePath);
-		if (file.exists()) {
-			file.delete();
-		}
+	
 
 		return fileContent;
 	}
+	
+ 
 
 }
